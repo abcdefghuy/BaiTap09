@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    tools:context=".BlueControl">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Thiết bị đang kết nối"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#2196F3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textMac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Địa chỉ MAC"
+        android:textSize="18sp"
+        android:textColor="#757575"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <ImageButton
+        android:id="@+id/btnTb1"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/circle_button"
+        android:elevation="8dp"
+        android:contentDescription="Button 1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textMac"/>
+
+    <TextView
+        android:id="@+id/labelTb1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Thiết bị 1"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        app:layout_constraintEnd_toEndOf="@+id/btnTb1"
+        app:layout_constraintStart_toStartOf="@+id/btnTb1"
+        app:layout_constraintTop_toBottomOf="@+id/btnTb1" />
+
+    <ImageButton
+        android:id="@+id/btnTb2"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginEnd="40dp"
+        android:background="@drawable/circle_button"
+        android:elevation="8dp"
+        android:contentDescription="Button 2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btnTb1"/>
+
+    <TextView
+        android:id="@+id/labelTb2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Thiết bị 2"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        app:layout_constraintEnd_toEndOf="@+id/btnTb2"
+        app:layout_constraintStart_toStartOf="@+id/btnTb2"
+        app:layout_constraintTop_toBottomOf="@+id/btnTb2" />
+
+    <TextView
+        android:id="@+id/textV1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/rounded_text_background"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="Thông báo"
+        android:textSize="20sp"
+        android:textColor="#333333"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/labelTb1" />
+
+    <ImageButton
+        android:id="@+id/bnDisc"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/btnnotconnec"
+        android:elevation="8dp"
+        android:contentDescription="Disconnect Button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textV1" />
+
+    <TextView
+        android:id="@+id/labelDisc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Ngắt kết nối"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        app:layout_constraintEnd_toEndOf="@+id/bnDisc"
+        app:layout_constraintStart_toStartOf="@+id/bnDisc"
+        app:layout_constraintTop_toBottomOf="@+id/bnDisc" />
+
+</androidx.constraintlayout.widget.ConstraintLayout> 
