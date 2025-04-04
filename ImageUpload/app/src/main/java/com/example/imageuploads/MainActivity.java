@@ -1,4 +1,4 @@
- package com.example.imageuploads;
+package com.example.imageuploads;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
@@ -31,6 +32,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 import com.example.imageuploads.constant.Const;
 import com.example.imageuploads.model.ImageUpload;
+import com.example.imageuploads.model.MessageResponse;
 import com.example.imageuploads.retrofit.ServiceAPI;
 import com.example.imageuploads.util.RealPathUtil;
 
@@ -39,23 +41,30 @@ import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
- public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getName();
     private Button btnUpload, btnChoose;
     private Uri mUri;
-    ImageView imageViewChoose, imageViewUpload;
-    EditText editTextUserName;
-    TextView textViewUserName;
+    private ImageView imageViewChoose, imageViewUpload;
+    private EditText editTextUserName;
+    private TextView textViewUserName;
     private ProgressDialog mProgressDialog;
     private static final int MY_REQUEST_CODE = 100;
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public static String[] storage_permissions = {
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             android.Manifest.permission.READ_EXTERNAL_STORAGE
     };
+
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public static String[] storage_Permission_33 = {
             android.Manifest.permission.READ_MEDIA_IMAGES,
@@ -73,69 +82,74 @@ import retrofit2.Response;
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         AnhXa();
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage("Please wait upload...");
-        btnChoose.setOnClickListener(v -> {
-            checkPermission();
-        });
+
+        btnChoose.setOnClickListener(v -> checkPermission());
         btnUpload.setOnClickListener(v -> {
             if (mUri != null) {
-
-                // Upload the image to your server or perform any action
-                // For example, using Retrofit or any other library
-                // After upload, dismiss the progress dialog
                 UploadImage1();
             } else {
-                Log.e(TAG, "onClick: No image selected");
+                Toast.makeText(this, "Please choose an image first", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void UploadImage1() {
         mProgressDialog.show();
-        String username = editTextUserName.getText().toString();
-        RequestBody requestUserName = RequestBody.create(MediaType.parse("multipart/form-data"), username);
-        // Create a RequestBody for the image file
-        String ImagePath = RealPathUtil.getRealPath(this,mUri);
+        String username = editTextUserName.getText().toString().trim();
+        if (username.isEmpty()) {
+            Toast.makeText(this, "Please enter username", Toast.LENGTH_SHORT).show();
+            mProgressDialog.dismiss();
+            return;
+        }
+
+        String ImagePath = RealPathUtil.getRealPath(this, mUri);
         File file = new File(ImagePath);
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData(Const.MY_IMAGES, file.getName(), requestFile);
-        // Call your API to upload the image
-        ServiceAPI.serviceAPI.upload1(requestUserName, body).enqueue(new retrofit2.Callback<List<ImageUpload>>() {
+        RequestBody requestUserName = RequestBody.create(MediaType.parse("multipart/form-data"), username);
+
+        ServiceAPI.serviceAPI.upload1(requestUserName, body).enqueue(new Callback<MessageResponse>() {
             @Override
-            public void onResponse(Call<List<ImageUpload>> call, Response<List<ImageUpload>> response) {
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
                 mProgressDialog.dismiss();
-                List<ImageUpload> imageUploads = response.body();
-                if (imageUploads.size() > 0) {
-                   for(int i=0; i<imageUploads.size(); i++){
-                       textViewUserName.setText(imageUploads.get(i).getUsername());
-                       Glide.with(MainActivity.this)
-                               .load(imageUploads.get(i).getAvatar())
-                               .into(imageViewUpload);
-                       Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
-                }
+                if (response.isSuccessful() && response.body() != null) {
+                    MessageResponse messageResponse = response.body();
+                    if (!messageResponse.getData().isEmpty()) {
+                        ImageUpload imageUpload = messageResponse.getData().get(0);
+                        textViewUserName.setText(imageUpload.getUsername());
+                        Glide.with(MainActivity.this)
+                                .load(Const.BASE_URL + imageUpload.getAvatar())
+                                .into(imageViewUpload);
+                        Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Log.e(TAG, "onResponse: Upload failed");
+                    Toast.makeText(MainActivity.this, "Upload failed", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<ImageUpload>> call, Throwable t) {
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
                 mProgressDialog.dismiss();
+                Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "onFailure: " + t.getMessage());
             }
         });
-
     }
 
     public static String[] getStoragePermission() {
+        String[] permission;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return storage_Permission_33;
+             permission= storage_Permission_33;
         } else {
-            return storage_permissions;
+            permission = storage_permissions;
         }
+        return permission;
     }
+
     private void checkPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             openGallery();
@@ -148,6 +162,7 @@ import retrofit2.Response;
             requestPermissions(getStoragePermission(), MY_REQUEST_CODE);
         }
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -155,7 +170,7 @@ import retrofit2.Response;
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openGallery();
             } else {
-                // Permission denied
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -166,35 +181,30 @@ import retrofit2.Response;
         intent.setAction(Intent.ACTION_GET_CONTENT);
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Image"));
     }
+
     private final ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult o) {
-                    Log.e(TAG, "onActivityResult: ");
                     if (o.getResultCode() == Activity.RESULT_OK) {
                         Intent data = o.getData();
                         if (data != null) {
                             Uri uri = data.getData();
-                            Log.e(TAG, "onActivityResult: " + uri);
-                            // Handle the selected image URI
-                            mUri =uri;
-                            // Do something with the URI, like displaying it in an ImageView
+                            mUri = uri;
                             try {
                                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                                 imageViewChoose.setImageBitmap(bitmap);
-                            }
-                            catch (Exception e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
-                    } else {
-                        Log.e(TAG, "onActivityResult: Cancelled");
                     }
                 }
             }
     );
-    private void AnhXa(){
+
+    private void AnhXa() {
         btnChoose = findViewById(R.id.btnChoose);
         btnUpload = findViewById(R.id.btnUpload);
         imageViewChoose = findViewById(R.id.imgChoose);
