@@ -29,11 +29,11 @@ public class MessageResponse {
         this.success = success;
     }
 
-    public List<ImageUpload> getData() {
+    public List<ImageUpload> getResult() {
         return result;
     }
 
-    public void setData(List<ImageUpload> data) {
+    public void setResult(List<ImageUpload> data) {
         this.result = data;
     }
 }

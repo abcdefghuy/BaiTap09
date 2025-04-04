@@ -118,14 +118,19 @@ public class MainActivity extends AppCompatActivity {
                 mProgressDialog.dismiss();
                 if (response.isSuccessful() && response.body() != null) {
                     MessageResponse messageResponse = response.body();
-                    if (!messageResponse.getData().isEmpty()) {
-                        ImageUpload imageUpload = messageResponse.getData().get(0);
-                        textViewUserName.setText(imageUpload.getUsername());
-                        Glide.with(MainActivity.this)
-                                .load(Const.BASE_URL + imageUpload.getAvatar())
-                                .into(imageViewUpload);
-                        Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "onResponse: " + messageResponse.getMessage());
+                    if(messageResponse.isSuccess()) {
+                        Log.e(TAG, "onResponse: " + messageResponse.getResult().get(0));
+                        if (!messageResponse.getResult().isEmpty() || messageResponse.getResult() != null) {
+                            ImageUpload imageUpload = messageResponse.getResult().get(0);
+                            textViewUserName.setText(imageUpload.getUsername());
+                            Glide.with(MainActivity.this)
+                                    .load( imageUpload.getAvatar())
+                                    .into(imageViewUpload);
+                            Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+                        }
                     }
+
                 } else {
                     Toast.makeText(MainActivity.this, "Upload failed", Toast.LENGTH_SHORT).show();
                 }

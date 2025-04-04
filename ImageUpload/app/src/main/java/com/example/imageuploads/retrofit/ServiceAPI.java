@@ -35,6 +35,6 @@ public interface ServiceAPI {
     Call<List<ImageUpload>> upload(@Part(Const.MY_USERNAME)RequestBody username, @Part MultipartBody.Part avatar);
 
     @Multipart
-    @POST("upload1.php")
-    Call<MessageResponse> upload1(@Part(Const.MY_USERNAME)RequestBody username, @Part MultipartBody.Part avatar);
+    @POST("updateimages.php")
+    Call<MessageResponse> upload1(@Part(Const.MY_ID)RequestBody username, @Part MultipartBody.Part avatar);
 }
