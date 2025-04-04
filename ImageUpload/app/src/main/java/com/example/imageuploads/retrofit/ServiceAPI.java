@@ -21,7 +21,8 @@ import retrofit2.http.Part;
 
 public interface ServiceAPI {
     public static final String BASE_URL = "http://app.iotstar.vn:8081/appfoods/";
-    Gson gson = new GsonBuilder().setDateFormat("yyyy MM dd HH:mm:ss").create();
+    Gson gson = new GsonBuilder().setDateFormat("yyyy MM dd HH:mm:ss")
+                    .setLenient().create();
 
     ServiceAPI serviceAPI = new Retrofit.Builder()
             .baseUrl(BASE_URL)

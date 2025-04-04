@@ -1,5 +1,7 @@
 package com.example.imageuploads;
 
+import static org.jsoup.nodes.Document.OutputSettings.Syntax.html;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -35,6 +37,12 @@ import com.example.imageuploads.model.ImageUpload;
 import com.example.imageuploads.model.MessageResponse;
 import com.example.imageuploads.retrofit.ServiceAPI;
 import com.example.imageuploads.util.RealPathUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.util.List;
@@ -117,20 +125,39 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
                 mProgressDialog.dismiss();
                 if (response.isSuccessful() && response.body() != null) {
-                    MessageResponse messageResponse = response.body();
-                    Log.e(TAG, "onResponse: " + messageResponse.getMessage());
-                    if(messageResponse.isSuccess()) {
-                        Log.e(TAG, "onResponse: " + messageResponse.getResult().get(0));
-                        if (!messageResponse.getResult().isEmpty() || messageResponse.getResult() != null) {
-                            ImageUpload imageUpload = messageResponse.getResult().get(0);
-                            textViewUserName.setText(imageUpload.getUsername());
-                            Glide.with(MainActivity.this)
-                                    .load( imageUpload.getAvatar())
-                                    .into(imageViewUpload);
-                            Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+                    String responseBody = response.body().toString(); // Lấy chuỗi trả về
+                    // Loại bỏ các thẻ HTML từ response body
+                    responseBody = cleanHtml(responseBody);
 
+                    try {
+                        // Giả sử bạn đang xử lý JSON từ response
+                        JSONObject jsonResponse = new JSONObject(responseBody);
+                        boolean success = jsonResponse.getBoolean("success");
+                        String message = jsonResponse.getString("message");
+
+                        if (success) {
+                            // Xử lý nếu thành công
+                            JSONArray result = jsonResponse.getJSONArray("result");
+                            if (result.length() > 0) {
+                                JSONObject imageUpload = result.getJSONObject(0);
+                                String username = imageUpload.getString("username");
+                                String avatar = imageUpload.getString("avatar");
+
+                                // Cập nhật UI
+                                textViewUserName.setText(username);
+                                Glide.with(MainActivity.this)
+                                        .load(avatar)
+                                        .into(imageViewUpload);
+
+                                Toast.makeText(MainActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "Upload failed: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(MainActivity.this, "JSON parse error", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(MainActivity.this, "Upload failed", Toast.LENGTH_SHORT).show();
                 }
@@ -144,7 +171,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    public String cleanHtml(String input) {
+        Document doc = Jsoup.parse(input);
+        return doc.text(); // Trả về chỉ văn bản, không có thẻ HTML
+    }
     public static String[] getStoragePermission() {
         String[] permission;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
